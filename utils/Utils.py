@@ -10,3 +10,11 @@ class Utils:
             'content': message,
         },
     ])
+
+    @staticmethod
+    def ask_to_the_chunked_llama(message):
+        return ollama.chat(
+            model='llama3',
+            messages=[{'role': 'user','content': message,},],
+            stream=True
+        )
