@@ -1,1 +1,1 @@
-from .ollama import ollamaBp
+from .ollama_bp import ollamaBp
