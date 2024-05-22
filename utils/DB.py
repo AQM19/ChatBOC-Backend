@@ -83,25 +83,25 @@ class PostgresDB:
         )
         self.execute_query(query)
 
-# Uso de la clase
-db = PostgresDB(host="localhost", database="postgres", user="postgres", password="@1Xygm352Z+chatboc")
-db.connect()
-db.execute_query("SELECT version();")
-# Ejecutar una consulta
-db.execute_query("CREATE TABLE IF NOT EXISTS ejemplo (id SERIAL PRIMARY KEY, nombre VARCHAR(100))")
+# # Uso de la clase
+# db = PostgresDB(host="localhost", database="postgres", user="postgres", password="@1Xygm352Z+chatboc")
+# db.connect()
+# db.execute_query("SELECT version();")
+# # Ejecutar una consulta
+# db.execute_query("CREATE TABLE IF NOT EXISTS ejemplo (id SERIAL PRIMARY KEY, nombre VARCHAR(100))")
 
-# Insertar datos
-db.insert("ejemplo", ["nombre"], ["Juan"])
+# # Insertar datos
+# db.insert("ejemplo", ["nombre"], ["Juan"])
 
-# Obtener datos
-result = db.execute_and_fetchall("SELECT * FROM ejemplo")
-print(result)
+# # Obtener datos
+# result = db.execute_and_fetchall("SELECT * FROM ejemplo")
+# print(result)
 
-# Actualizar datos
-db.update("ejemplo", {"nombre": "Juan Actualizado"}, "id = 1")
+# # Actualizar datos
+# db.update("ejemplo", {"nombre": "Juan Actualizado"}, "id = 1")
 
-# Borrar datos
-db.delete("ejemplo", "id = 1")
+# # Borrar datos
+# db.delete("ejemplo", "id = 1")
 
-# Cerrar la conexión
-db.disconnect()
+# # Cerrar la conexión
+# db.disconnect()
