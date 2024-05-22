@@ -37,13 +37,7 @@ class Scraper:
         #Comprobamos si la carpeta de descarga esta creada
         CHECK_FOLDER = os.path.isdir(Constants.DOCS_PATH)
 
-        #Comprobamos si la carpeta de logs esta creada
-        CHECK_LOGS_FOLDER = os.path.isdir(Constants.LOGS_PATH)
-
-        # Si la carpeta no existe la crea
-        if not CHECK_LOGS_FOLDER:
-            os.makedirs(Constants.LOGS_PATH)
-            self.logger.info(f"> Se ha creado la carpeta:  {Constants.LOGS_PATH} ")
+        
 
         if not CHECK_FOLDER:
             os.makedirs(Constants.PDFS_PATH)

@@ -12,7 +12,7 @@ WEB_AGENTS="Business\\user-agents.txt"
 """--------------------------------"""
 
 BOC="https://boc.cantabria.es/boces/verAnuncioAction.do?idAnuBlob="
-DOCS_PATH="src/scraper"
+DOCS_PATH="src/scraper/docs"
 PDFS_PATH=f"{DOCS_PATH}/pdf_docs"
 
 
