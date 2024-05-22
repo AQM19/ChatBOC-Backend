@@ -8,7 +8,8 @@ ollamaBp = Blueprint('ollama', __name__)
 
 @ollamaBp.route('/', methods=['GET'])
 def ask() -> str:
-    question = request.args.get('question', default='tell me a joke')
+    question = request.args.get('question')
+    
     try:
         base_service = BaseService()
         response = base_service.manage_response(question)

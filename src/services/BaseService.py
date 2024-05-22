@@ -5,10 +5,6 @@ class BaseService:
         response = Utils.ask_to_the_llama(message=question)
         
         # Mandar esto a una base de datos
+        print(response)
         
-        return response['message']['content']
-    
-    def manage_chunked_response(self, question) -> str:
-        response = Utils.ask_to_the_chunked_llama(message=question)
-        # Mandar esto a una base de datos
         return response['message']['content']
