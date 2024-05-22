@@ -12,7 +12,7 @@ WEB_AGENTS="Business\\user-agents.txt"
 """--------------------------------"""
 
 BOC="https://boc.cantabria.es/boces/verAnuncioAction.do?idAnuBlob="
-DOCS_PATH="Scraper/docs"
+DOCS_PATH="src/scraper"
 PDFS_PATH=f"{DOCS_PATH}/pdf_docs"
 
 
@@ -22,6 +22,8 @@ PATIENCE = 20
 NUM_ITER_MAX=100000
 FIRST_DOWNLOAD=403000 #El BOC ya sabemos que tiene más de 400000 pdfs
 NUM_PROCESSES = 20
+
+LOGS_PATH="C:/Users/danib/Desktop/Chat-BOC/src/scraper/logs/"
 
 #ChromaDB
 CHROMA_SERVER_HOST='localhost'
