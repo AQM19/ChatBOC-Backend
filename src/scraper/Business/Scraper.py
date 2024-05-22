@@ -1,10 +1,11 @@
 import multiprocessing
 from multiprocessing.pool import ThreadPool
+import logging
 from bs4 import BeautifulSoup
 import requests
 from tqdm import tqdm
 import os
-from pypdf import PdfReader
+# from pypdf import PdfReader
 
 from Business.WebAgents import WebAgents
 from Business.Proxies import Proxies
@@ -23,6 +24,9 @@ class Scraper:
 
         if self.proxies:
             self.proxy = Proxies()
+        
+        #Arrancamos logger
+        self.logger = logging.getLogger(__name__)
 
         self.init()
     
@@ -33,26 +37,33 @@ class Scraper:
         #Comprobamos si la carpeta de descarga esta creada
         CHECK_FOLDER = os.path.isdir(Constants.DOCS_PATH)
 
+        #Comprobamos si la carpeta de logs esta creada
+        CHECK_LOGS_FOLDER = os.path.isdir(Constants.LOGS_PATH)
+
         # Si la carpeta no existe la crea
+        if not CHECK_LOGS_FOLDER:
+            os.makedirs(Constants.LOGS_PATH)
+            self.logger.info(f"> Se ha creado la carpeta:  {Constants.LOGS_PATH} ")
+
         if not CHECK_FOLDER:
             os.makedirs(Constants.PDFS_PATH)
-            print(f"> Se ha creado la carpeta:  {Constants.PDFS_PATH} ")
+            self.logger.info(f"> Se ha creado la carpeta:  {Constants.PDFS_PATH} ")
 
             for i in range(1,Constants.FIRST_DOWNLOAD):
                 urls.append(f"{Constants.BOC}{i+1}")
 
         else:
-            print(f"> {Constants.DOCS_PATH} ya existe.")
+            self.logger.info(f"> {Constants.DOCS_PATH} ya existe.")
         
         #Leemos cuantos pdfs hay en el directorio en caso de corte o problema 
         if len(os.listdir(Constants.PDFS_PATH)) == 0:
-            print("? - No se encontraron documentos descargados.")
-            print("? - La descarga comenzará desde cero.")
+            self.logger.warn("? - No se encontraron documentos descargados.")
+            self.logger.warn("? - La descarga comenzará desde cero.")
             self.first_Download(urls)
 
         else:
             #Con esto recogemos el id de los pdfs que ya tenemos descargados
-            print("? - Se encontraron documentos ya descargados... ")
+            self.logger.warn("? - Se encontraron documentos ya descargados... ")
             for path in os.listdir(Constants.PDFS_PATH):
                 if os.path.isfile(os.path.join(Constants.PDFS_PATH, path)):
                     self.docsCheckpoint.append(int(path.split(".")[0]))
@@ -64,7 +75,7 @@ class Scraper:
 
         if len(self.docsCheckpoint) < Constants.FIRST_DOWNLOAD:
 
-            print("? - La descarga inicial no se completó aún. Reanudando...")
+            self.logger.warn("? - La descarga inicial no se completó aún. Reanudando...")
 
             for i in range(0,Constants.FIRST_DOWNLOAD):
 
@@ -85,16 +96,16 @@ class Scraper:
                         validUrls.append(url)
 
                     elif patience == Constants.PATIENCE:
-                        print("> Se supero la paciencia")
+                        self.logger.info("? Se supero la paciencia")
                         break
 
                     else:
-                        print(f"> Se encontró un error en {url}. Probablemente no exista.")
+                        self.logger.warn(f"? Se encontró un error en {url}. Probablemente no exista.")
                         patience += 1
 
         
 
-        print("> Iniciando descarga del BOC...")
+        self.logger.info("> Iniciando descarga del BOC...")
         
         pool=ThreadPool(processes=Constants.NUM_PROCESSES)
         pool.map(self.download_PDF,validUrls)
@@ -117,7 +128,7 @@ class Scraper:
             if self.proxies:
                 proxy=self.proxy.getProxie()
 
-            print(f"> Comprobando {url}")
+            self.logger.info(f"> Comprobando {url}")
 
             #Hacemos la llamada, comprobamos si existe la url y si hay pdf
             r = requests.get(f"{url}", headers=headers,proxies=proxy)
@@ -131,13 +142,12 @@ class Scraper:
                 return url,False
             
             else:
-                print("? - Url no valida")
-                print( f"? - La url {url} devolvió un status code de : {r.status_code}. Div element -> {error.text}")
+                self.logger.warn( f"? - La url {url} devolvió un status code de : {r.status_code}. Div element -> {error.text}")
                 return url,True
 
         except Exception as e:
-            print(f"X - Se ha encontrado un error en la comprobación de la url {url}.")
-            print( f"? - La url {url} devolvió un status code de : {r.status_code}. ")
+            self.logger.error(f"X - Se ha encontrado un error en la comprobación de la url {url}.")
+            self.logger.error( f"? - La url {url} devolvió un status code de : {r.status_code}. ")
             return url,True
 
     def download_PDF (self,url):
@@ -165,7 +175,7 @@ class Scraper:
 
 
 
-        print(f"> Documento .pdf {id} descargado y convertido a .txt")
+        self.logger.info(f"> Documento .pdf {id} descargado.")
 
     #region Privado
 
@@ -184,7 +194,7 @@ class Scraper:
     
     def first_Download(self,urls):
 
-        print(f"> Iniciando descarga de los primeros {Constants.FIRST_DOWNLOAD} pdfs del BOC")
+        self.logger.info(f"> Iniciando descarga de los primeros {Constants.FIRST_DOWNLOAD} pdfs del BOC")
 
         pool=ThreadPool(processes=Constants.NUM_PROCESSES)
         pool.map(self.download_PDF,urls)
