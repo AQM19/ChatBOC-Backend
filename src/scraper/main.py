@@ -1,9 +1,18 @@
 import logging
 from datetime import datetime
+import os
+
 from Business.Scraper import Scraper
 import Business.Constants as Constants
 
 def main ():
+
+    #Comprobamos si la carpeta de logs esta creada
+    CHECK_LOGS_FOLDER = os.path.isdir(Constants.LOGS_PATH)
+
+    # Si la carpeta no existe la crea
+    if not CHECK_LOGS_FOLDER:
+        os.makedirs(Constants.LOGS_PATH)
 
     #Fecha para organizar los logs
     date = datetime.now()
