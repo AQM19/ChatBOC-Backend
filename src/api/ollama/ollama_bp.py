@@ -1,17 +1,16 @@
 from flask import Blueprint, jsonify, request
 
 from utils.Utils import Utils
-from src.services.BaseService import BaseService
+from src.services.model_service import ModelService
 
 ollamaBp = Blueprint('ollama', __name__)
-
 
 @ollamaBp.route('/', methods=['GET'])
 def ask() -> str:
     question = request.args.get('question')
     
     try:
-        base_service = BaseService()
+        base_service = ModelService()
         response = base_service.manage_response(question)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
