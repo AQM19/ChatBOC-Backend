@@ -1,110 +1,41 @@
-from flask import Blueprint, jsonify, request, stream_with_context, Response
-import bcrypt
-from src.services.connection_db import ConnectionBD
+from flask import Blueprint, jsonify, request
+from werkzeug.security import check_password_hash
+from src.models.User import User
+from src.api import db
+from flask_jwt_extended import create_access_token
 
 authBp = Blueprint('auth', __name__)
 
-@authBp.route('/login', methods=['GET'])
+# Ruta para iniciar sesión y generar token JWT
+@authBp.route('/login', methods=['POST'])
 def login():
-    data =request.get_json()
+    data = request.get_json()
     
     username = data.get('username')
-    email = data.get('email')
     password = data.get('password')
     
-    if not password:
-        return jsonify({'error': 'Username and password are required'}), 400
+    user = User.query.filter_by(username=username).first()
     
-    if not username or not email:
-        return jsonify({'error': 'Username and password are required'}), 400
+    if not user or not check_password_hash(user.password_hash, password):
+        return jsonify({'message': 'Invalid username or password'}), 401
     
-    salt = __user_exists(username, email)
-    
-    if not salt:
-        return jsonify({'error': 'No se pudo encontrar al usuario'}), 400
-    
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-    
-    connection = ConnectionBD()
-    connection.connect()
-        
-        
+    access_token = create_access_token(identity=user.id)
+    return jsonify(access_token=access_token)
 
 @authBp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-    
-    if not username:
-        return jsonify({'error': 'Username is required'}), 400
-    
-    if not email:
-        return jsonify({'error': 'Email is required'}), 400
-    
-    if not password:
-        return jsonify({'error': 'Password is required'}), 400
-    
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-    
-    try:
-        __save_user_to_db(email, username, hashed_password, salt)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+
+    # Verifica si el usuario ya existe
+    if User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
+        return jsonify({'message': 'Username or email already exists'}), 400
+
+    # Crea un nuevo usuario
+    new_user = User(username=username, email=email, password=password)
+    db.session.add(new_user)
+    db.session.commit()
 
     return jsonify({'message': 'User registered successfully'}), 201
-
-
-def __save_user_to_db(email, username, hashed_password, salt):
-    connection = ConnectionBD()
-    
-    connection.connect()
-    
-    if connection.is_connected():
-        print('Registrando usuario...')
-        
-        rol_id = connection.select(
-            'rols',
-            ['id'],
-            "rols.nemonic = 'User'"
-        )
-        
-        connection.insert(
-            'users',
-            ['username', 'email', 'password_hash', 'salt', 'role_id'],
-            [username, email, hashed_password, salt, rol_id]
-        )
-        
-    connection.disconnect()
-    
-def __user_exists(username = None, email = None):
-    
-    if not username and not email:
-        return jsonify({'error': 'Username and email are required'}), 400
-    
-    connection = ConnectionBD()
-    connection.connect()
-    
-    if connection.is_connected():
-        salt = None
-        
-        if username:
-           salt = connection.select(
-               'users',
-               '[salt]',
-               'users.username = %s', (username)
-           )
-           
-        if email:
-            salt = connection.select(
-               'users',
-               '[salt]',
-               'users.email = %s', (email)
-            )
-        
-    connection.disconnect()
-    
-    return salt
