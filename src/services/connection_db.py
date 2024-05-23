@@ -60,6 +60,15 @@ class ConnectionBD:
         self.__execute_query(query, params)
         return self.__fetch_one()
 
+    def select(self, table, columns, condition):
+        query = sql.SQL("SELECT {columns} FROM {table} WHERE {condition}").format(
+            columns=sql.SQL(', ').join(map(sql.Identifier, columns)),
+            table=sql.Identifier(table),
+            condition=sql.SQL(condition)
+        )
+        
+        return self.__execute_and_fetch_one(query)
+
     def insert(self, table, columns, values):        
         query = sql.SQL("INSERT INTO {table} ({columns}) VALUES ({values})").format(
             table=sql.Identifier(table),
@@ -67,7 +76,7 @@ class ConnectionBD:
             values=sql.SQL(', ').join(sql.Placeholder() * len(values))
         )
         
-        self.__execute_query(query, values)
+        return self.__execute_and_fetch_one(query, values)
 
     def update(self, table, updates, condition):
         set_clause = sql.SQL(', ').join(
@@ -79,11 +88,11 @@ class ConnectionBD:
             set_clause=set_clause,
             condition=sql.SQL(condition)
         )
-        self.__execute_query(query, list(updates.values()))
+        return self.__execute_and_fetch_one(query, list(updates.values()))
 
     def delete(self, table, condition):
         query = sql.SQL("DELETE FROM {table} WHERE {condition}").format(
             table=sql.Identifier(table),
             condition=sql.SQL(condition)
         )
-        self.__execute_query(query)
+        return self.__execute_and_fetch_one(query)

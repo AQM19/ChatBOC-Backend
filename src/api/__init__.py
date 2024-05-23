@@ -5,10 +5,10 @@ def deploy_api():
 
     with api.app_context():
         
-        from .demo import bp
+        from .auth import authBp
         from .ollama import ollamaBp
         
-        api.register_blueprint(bp)
+        api.register_blueprint(authBp)
         api.register_blueprint(ollamaBp)
 
     return api
