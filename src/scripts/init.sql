@@ -3,14 +3,10 @@
 -- Habilitar la extensión uuid-ossp
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Creación de los esquemas
--- CREATE SCHEMA security;
--- CREATE SCHEMA statistics;
-
 -- Creación de las bases de datos
 CREATE TABLE rols (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    nemonic VARCHAR(20) NOT NULL
+    nemonic VARCHAR(20) NOT NULL UNIQUE
 );
 
 INSERT INTO rols (nemonic)
@@ -18,8 +14,8 @@ VALUES ('Admin'), ('User');
 
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(512) NOT NULL,
     role_id UUID,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -31,6 +27,7 @@ CREATE TABLE users (
 CREATE TABLE chats (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
+    name VARCHAR(30) UNIQUE,
 
     CONSTRAINT fk_chat FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -51,7 +48,6 @@ VALUES ('admin', 'aquintanalm01@educantabria.es', '$2b$12$RUpUBCNuRpM19gxtiEFfWe
 CREATE TABLE model_runs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
-    run_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP NOT NULL,
     done BOOLEAN,
     done_reason VARCHAR(100),
