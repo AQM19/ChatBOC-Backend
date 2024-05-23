@@ -16,14 +16,3 @@ def ask() -> str:
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     return response
-    
-@ollamaBp.route('/stream', methods=['POST'])
-def ask_stream() -> str:
-    question = request.args.get('question')
-    
-    try:
-        return Response(stream_with_context(Utils.stream_from_the_llama(message=question)), mimetype='aplicatioon/json')
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
