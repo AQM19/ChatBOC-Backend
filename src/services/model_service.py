@@ -27,7 +27,7 @@ class ModelService:
         if self.connection.is_connected():
             print('Insertando datos...')
             # Discutir el flujo de información para obtener el id del chat.
-                   
+            
             self.connection.insert(
                 'model_runs',
                 ['user_id', 'created_at', 'done', 'done_reason', 'eval_count', 'eval_duration', 'load_duration', 'model', 'prompt_eval_duration', 'total_duration'], 
