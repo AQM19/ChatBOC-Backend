@@ -30,8 +30,8 @@ class ModelService:
                    
             self.connection.insert(
                 'model_runs',
-                ['user_id', 'run_at', 'created_at', 'done', 'done_reason', 'eval_count', 'eval_duration', 'load_duration', 'model', 'prompt_eval_duration', 'total_duration'], 
-                ['39da072c-69ab-4f1b-abb3-1feb6b586ec1', datetime.now(), created_at, done, done_reason, eval_count, eval_duration, load_duration, model, prompt_eval_duration, total_duration]
+                ['user_id', 'created_at', 'done', 'done_reason', 'eval_count', 'eval_duration', 'load_duration', 'model', 'prompt_eval_duration', 'total_duration'], 
+                ['39da072c-69ab-4f1b-abb3-1feb6b586ec1', created_at, done, done_reason, eval_count, eval_duration, load_duration, model, prompt_eval_duration, total_duration]
             )
             
             self.connection.disconnect()
