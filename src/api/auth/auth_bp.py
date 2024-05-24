@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from werkzeug.security import check_password_hash
 from src.models.User import User
 from src.api import db
@@ -18,6 +18,11 @@ def login():
     
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'message': 'Invalid username or password'}), 401
+    
+    # Set session data
+    session['user_id'] = user.id
+    session['user_name'] = user.username
+    session['user_rol'] = user.role
     
     access_token = create_access_token(identity=user.id)
     return jsonify(access_token=access_token)
