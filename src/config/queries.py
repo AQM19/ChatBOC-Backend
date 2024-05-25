@@ -1,0 +1,1 @@
+INSERT_CHAT = lambda user_id, chat_name: f"INSERT INTO chats (user_id, name) VALUES ( '{str(user_id)}' , '{str(chat_name)}') RETURNING id"

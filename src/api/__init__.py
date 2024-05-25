@@ -26,9 +26,11 @@ def deploy_api():
         from .auth import authBp
         from .ollama import ollamaBp
         from .chats import chatsBp
+        from .chat_messages import chatMessagesBp
         
         api.register_blueprint(authBp)
         api.register_blueprint(chatsBp)
+        api.register_blueprint(chatMessagesBp)
         api.register_blueprint(ollamaBp)
 
     return api

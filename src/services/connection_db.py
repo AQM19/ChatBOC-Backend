@@ -77,6 +77,24 @@ class ConnectionBD:
         )
         
         return self.__execute_and_fetch_one(query, values)
+    
+    def insert_with_return(self, table, columns, values):
+        query = sql.SQL("INSERT INTO {table} ({columns}) VALUES ({values}) RETURNING id").format(
+            table=sql.Identifier(table),
+            columns=sql.SQL(', ').join(map(sql.Identifier, columns)),
+            values=sql.SQL(', ').join(sql.Placeholder() * len(values))
+        )
+        
+        return self.__execute_and_fetch_one(query, values)
+    
+    def insert_with_no_result(self, table, columns, values):        
+        query = sql.SQL("INSERT INTO {table} ({columns}) VALUES ({values})").format(
+            table=sql.Identifier(table),
+            columns=sql.SQL(', ').join(map(sql.Identifier, columns)),
+            values=sql.SQL(', ').join(sql.Placeholder() * len(values))
+        )
+        
+        self.__execute_query(query, values)
 
     def update(self, table, updates, condition):
         set_clause = sql.SQL(', ').join(
@@ -96,3 +114,9 @@ class ConnectionBD:
             condition=sql.SQL(condition)
         )
         return self.__execute_and_fetch_one(query)
+    
+    def set_query(self, query):
+        return self.__execute_and_fetch_one(sql.SQL(query))
+    
+    def set_query_and_no_return(self, query):
+        self.__execute_query(query)
