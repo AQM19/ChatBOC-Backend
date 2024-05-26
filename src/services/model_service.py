@@ -8,6 +8,7 @@ class ModelService:
         self.connection = ConnectionBD()
     
     def manage_response(self, question) -> str:
+
         response = Utils.ask_to_the_llama(message=question)
         
         # Mandar esto a una base de datos
@@ -25,7 +26,6 @@ class ModelService:
         
         if self.connection.is_connected():
             print('Insertando datos...')
-            # Discutir el flujo de información para obtener el id del chat.
 
             user_id = session.get('user_id')
             
