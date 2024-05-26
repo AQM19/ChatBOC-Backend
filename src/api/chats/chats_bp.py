@@ -22,17 +22,19 @@ def user_chats():
             
             chats = connection.select(
                 'chats',
-                ['id', 'user_id','name'],
+                ['id','name'],
                 f"user_id = '{str(user_id)}'"
             )
             
-        connection.disconnect()
+            connection.disconnect()
 
-        if not chats:
-            return []
+            if not chats:
+                return jsonify([])
             
-        return chats
+            return jsonify(chats)
         
+        return jsonify({'Error': 'No se pudo conectar a la base de datos'}), 500
+            
     except Exception as e:
         return jsonify({'Error': str(e)}), 500
     
@@ -53,9 +55,6 @@ def insert_new_chat():
             print('Insertando chat nuevo para el usuario ', str(user_id))
 
             query = INSERT_CHAT(user_id, chat_name)
-            print()
-            print(query)
-            print()
             chat_id = connection.set_query(query)
 
             connection.disconnect()
@@ -70,3 +69,29 @@ def insert_new_chat():
     except Exception as e:
         return jsonify({'Error': str(e)}), 500
     
+@chatsBp.route('/user/chat/<id>', methods=['DELETE'])
+@jwt_required()
+def delete_chat_by_id(id):
+    
+    if not id:
+        return jsonify({'Error':'No hay ningun id'})
+    
+    try:
+
+        connection = ConnectionBD()
+        connection.connect()
+
+        if connection.is_connected():
+            print('Eliminando chat con id ', id)
+
+            query = DELETE_CHAT(chat_id=id)
+            connection.set_query_and_no_return(query)
+
+            connection.disconnect()
+
+            return jsonify(True)
+        
+        return jsonify({'Error': 'No se pudo conectar a la base de datos'}), 500
+    
+    except Exception as e:
+        return jsonify({'Error': str(e)}), 500

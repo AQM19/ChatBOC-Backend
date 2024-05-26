@@ -1,1 +1,2 @@
 INSERT_CHAT = lambda user_id, chat_name: f"INSERT INTO chats (user_id, name) VALUES ( '{str(user_id)}' , '{str(chat_name)}') RETURNING id"
+DELETE_CHAT = lambda chat_id: f"DELETE FROM chats WHERE id = '{str(chat_id)}'"
