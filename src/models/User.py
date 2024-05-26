@@ -1,6 +1,6 @@
-import uuid
-from src.api import db  # Suponiendo que tienes una instancia de SQLAlchemy llamada db
+from src.api import db
 from werkzeug.security import generate_password_hash, check_password_hash
+import uuid
 
 class User(db.Model):
     

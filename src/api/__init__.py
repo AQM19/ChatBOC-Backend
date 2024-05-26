@@ -1,9 +1,8 @@
 from dotenv import load_dotenv
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta
-import os
 from flask_jwt_extended import JWTManager
+from flask_sqlalchemy import SQLAlchemy
+import os
 
 load_dotenv()
 db = SQLAlchemy()

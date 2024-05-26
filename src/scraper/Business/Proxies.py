@@ -1,17 +1,11 @@
-from multiprocessing.pool import ThreadPool
-from tqdm import tqdm
-
-import os
-import random
-import time
-import pandas as pd
-import requests
-import multiprocessing
-
-
 from Business.WebAgents import WebAgents
+from multiprocessing.pool import ThreadPool
 import Business.Constants as Constants
-
+import os
+import pandas as pd
+import random
+import requests
+import time
 
 class Proxies:
 

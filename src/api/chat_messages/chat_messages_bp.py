@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, session
 from flask_jwt_extended import jwt_required
-from src.config.queries import *
+from src.config.queries import GET_CHAT_MESSAGES
 from src.services.connection_db import ConnectionBD
-from src.config.queries import *
 
 chatMessagesBp = Blueprint('chat_messages', __name__)
 

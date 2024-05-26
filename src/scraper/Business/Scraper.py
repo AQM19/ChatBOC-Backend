@@ -1,15 +1,13 @@
-import multiprocessing
-from multiprocessing.pool import ThreadPool
-import logging
 from bs4 import BeautifulSoup
-import requests
-from tqdm import tqdm
-import os
-# from pypdf import PdfReader
-
-from Business.WebAgents import WebAgents
 from Business.Proxies import Proxies
+from Business.WebAgents import WebAgents
+from multiprocessing.pool import ThreadPool
+from tqdm import tqdm
 import Business.Constants as Constants
+import logging
+import os
+import requests
+# from pypdf import PdfReader
 
 class Scraper:
 

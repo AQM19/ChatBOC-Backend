@@ -1,5 +1,5 @@
-import random
 import Business.Constants as Constants
+import random
 
 class WebAgents:
     """Gets random web agents to use as headers
@@ -28,7 +28,3 @@ class WebAgents:
             webAgents=[line.strip() for line in lines]  # Remove leading/trailing whitespace
 
         return webAgents
-
- 
-
-
