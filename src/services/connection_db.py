@@ -60,7 +60,34 @@ class ConnectionBD:
         self.__execute_query(query, params)
         return self.__fetch_one()
 
+    def select(self, table, columns, condition):
+        query = sql.SQL("SELECT {columns} FROM {table} WHERE {condition}").format(
+            columns=sql.SQL(', ').join(map(sql.Identifier, columns)),
+            table=sql.Identifier(table),
+            condition=sql.SQL(condition)
+        )
+        
+        return self.__execute_and_fetch_one(query)
+
     def insert(self, table, columns, values):        
+        query = sql.SQL("INSERT INTO {table} ({columns}) VALUES ({values})").format(
+            table=sql.Identifier(table),
+            columns=sql.SQL(', ').join(map(sql.Identifier, columns)),
+            values=sql.SQL(', ').join(sql.Placeholder() * len(values))
+        )
+        
+        return self.__execute_and_fetch_one(query, values)
+    
+    def insert_with_return(self, table, columns, values):
+        query = sql.SQL("INSERT INTO {table} ({columns}) VALUES ({values}) RETURNING id").format(
+            table=sql.Identifier(table),
+            columns=sql.SQL(', ').join(map(sql.Identifier, columns)),
+            values=sql.SQL(', ').join(sql.Placeholder() * len(values))
+        )
+        
+        return self.__execute_and_fetch_one(query, values)
+    
+    def insert_with_no_result(self, table, columns, values):        
         query = sql.SQL("INSERT INTO {table} ({columns}) VALUES ({values})").format(
             table=sql.Identifier(table),
             columns=sql.SQL(', ').join(map(sql.Identifier, columns)),
@@ -79,11 +106,17 @@ class ConnectionBD:
             set_clause=set_clause,
             condition=sql.SQL(condition)
         )
-        self.__execute_query(query, list(updates.values()))
+        return self.__execute_and_fetch_one(query, list(updates.values()))
 
     def delete(self, table, condition):
         query = sql.SQL("DELETE FROM {table} WHERE {condition}").format(
             table=sql.Identifier(table),
             condition=sql.SQL(condition)
         )
-        self.__execute_query(query)
+        return self.__execute_and_fetch_one(query)
+    
+    def set_query(self, query):
+        return self.__execute_and_fetch_all(sql.SQL(query))
+    
+    def set_query_and_no_return(self, query):
+        self.__execute_query(sql.SQL(query))

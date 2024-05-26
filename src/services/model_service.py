@@ -1,7 +1,6 @@
 from src.services.connection_db import ConnectionBD
 from utils.Utils import Utils
-import json
-from datetime import datetime
+from flask import session
 
 class ModelService:
     
@@ -9,6 +8,7 @@ class ModelService:
         self.connection = ConnectionBD()
     
     def manage_response(self, question) -> str:
+
         response = Utils.ask_to_the_llama(message=question)
         
         # Mandar esto a una base de datos
@@ -26,17 +26,15 @@ class ModelService:
         
         if self.connection.is_connected():
             print('Insertando datos...')
-            # Discutir el flujo de información para obtener el id del chat.
-                   
-            self.connection.insert(
+
+            user_id = session.get('user_id')
+            
+            self.connection.insert_with_no_result(
                 'model_runs',
-                ['user_id', 'run_at', 'created_at', 'done', 'done_reason', 'eval_count', 'eval_duration', 'load_duration', 'model', 'prompt_eval_duration', 'total_duration'], 
-                ['39da072c-69ab-4f1b-abb3-1feb6b586ec1', datetime.now(), created_at, done, done_reason, eval_count, eval_duration, load_duration, model, prompt_eval_duration, total_duration]
+                ['user_id', 'created_at', 'done', 'done_reason', 'eval_count', 'eval_duration', 'load_duration', 'model', 'prompt_eval_duration', 'total_duration'], 
+                [str(user_id), created_at, done, done_reason, eval_count, eval_duration, load_duration, model, prompt_eval_duration, total_duration]
             )
             
             self.connection.disconnect()
-            
-        
-        message = response['message']
         
         return response['message']['content']

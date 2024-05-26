@@ -1,29 +1,50 @@
-from flask import Blueprint, jsonify, request, stream_with_context, Response
-
-
-from utils.Utils import Utils
+from flask import Blueprint, jsonify, request, session
+from flask_jwt_extended import jwt_required
+from src.config.queries import INSERT_QUESTION, INSERT_RESPONSE
+from src.services.connection_db import ConnectionBD
 from src.services.model_service import ModelService
 
 ollamaBp = Blueprint('ollama', __name__)
 
 @ollamaBp.route('/', methods=['GET'])
+@jwt_required()
 def ask() -> str:
-    question = request.args.get('question')
     
+    user_id = session.get('user_id')
+    question = request.args.get('question')
+    chat_id = request.args.get('chat_id')
+
     try:
+        
+        if not user_id:
+            return jsonify({'Error': 'No hay ninún usuario logeado'}), 404
+        
+        if not chat_id:
+            return jsonify({'Error': 'No hay ninún chat seleccionado'}), 404
+
+        connection = ConnectionBD()
+        connection.connect()
+
+        if connection.is_connected():
+
+            query = INSERT_QUESTION(chat_id, user_id, question)
+            connection.set_query_and_no_return(query)
+
+        connection.disconnect()
+
         base_service = ModelService()
         response = base_service.manage_response(question)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    return response
-    
-@ollamaBp.route('/stream', methods=['POST'])
-def ask_stream() -> str:
-    question = request.args.get('question')
-    
-    try:
-        return Response(stream_with_context(Utils.stream_from_the_llama(message=question)), mimetype='aplicatioon/json')
+
+        connection.connect()
         
+        if connection.is_connected():
+
+            query = INSERT_RESPONSE(chat_id, user_id, response)
+            connection.set_query_and_no_return(query)
+
+        connection.disconnect()
+        
+        return response
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
