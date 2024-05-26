@@ -116,7 +116,7 @@ class ConnectionBD:
         return self.__execute_and_fetch_one(query)
     
     def set_query(self, query):
-        return self.__execute_and_fetch_one(sql.SQL(query))
+        return self.__execute_and_fetch_all(sql.SQL(query))
     
     def set_query_and_no_return(self, query):
         self.__execute_query(sql.SQL(query))
