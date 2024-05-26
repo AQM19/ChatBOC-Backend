@@ -1,5 +1,7 @@
 docs
 postgres
+chroma
+chromadb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
