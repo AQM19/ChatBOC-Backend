@@ -1,17 +1,21 @@
-from flask import Blueprint, jsonify, session, request
+from flask import Blueprint, jsonify, session
 from flask_jwt_extended import jwt_required
 from src.config.queries import *
 from src.services.connection_db import ConnectionBD
+from src.config.queries import *
 
 chatMessagesBp = Blueprint('chat_messages', __name__)
 
-@chatMessagesBp.route('/user/chat/messages', methods=['GET'])
+@chatMessagesBp.route('/user/chat/<id>/messages', methods=['GET'])
 @jwt_required()
-def get_chat_messages():
+def get_chat_messages(id):
+
+    if not id:
+        return jsonify({'Error':'No hay ningún chat con ese id'}), 404
+
     user_id = session.get('user_id')
-    chat_id = request.args.get('chat_id')
     
-    if not user_id and not chat_id:
+    if not user_id:
         return jsonify({'Error':'No hay ningún usuario logeado'}), 404
     
     try:
@@ -21,17 +25,15 @@ def get_chat_messages():
         
         if connection.is_connected():
 
-            chat_messages = connection.select(
-                'chat_messages',
-                ['id', 'chat_id', 'user_id', 'message'],
-                f"user_id = '{str(user_id)}' and chat_id = '{str(chat_id)}'"
-            )
+            query = GET_CHAT_MESSAGES(chat_id=id, user_id=user_id)
+            chat_messages = connection.set_query(query)
+
         connection.disconnect()
 
         if not chat_messages:
-            return []
+            return jsonify([])
         
-        return chat_messages
+        return jsonify(chat_messages)
 
     except Exception as e:
         return jsonify({'Error': str(e)}), 500
