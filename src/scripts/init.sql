@@ -37,6 +37,8 @@ CREATE TABLE chat_messages (
     chat_id UUID,
     user_id UUID,
     "message" TEXT,
+    is_response BOOLEAN,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_chat_messages_1 FOREIGN KEY (chat_id) REFERENCES chats(id),
     CONSTRAINT fk_chat_messages_2 FOREIGN KEY (user_id) REFERENCES users(id)
