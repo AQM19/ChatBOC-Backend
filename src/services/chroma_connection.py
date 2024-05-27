@@ -3,8 +3,12 @@ import os
 import chromadb
 from chromadb.config import Settings
 from langchain_community.vectorstores import Chroma
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import OllamaEmbeddings
 
 import logging
+
+from CustomEmbedding import CustomEmbeddingOllama
 
 
 class chromadb_connection:
@@ -35,24 +39,22 @@ class chromadb_connection:
 
         self.chroma_connection()
 
-        #self.current_collection = None
-        self.retriever = None
-        self.embedding = None
-        #self.splitter = RecursiveCharacterTextSplitter(chunk_size=2048, chunk_overlap=128)
-    
+        
+        self.embedding_langchain = OllamaEmbeddings(model="llama3")
+        self.embedding = CustomEmbeddingOllama(model="llama3")       
  
     def chroma_connection(self):
         """
         Establece la conexión con el servidor ChromaDB utilizando la configuración proporcionada.
         """
-
-
         try:
             self.client = chromadb.HttpClient(host=self.host,port=self.port,settings=self.settings)
             self.logger.info(f"El servidor chroma está operativo. ")
             
         except ValueError:
             self.logger.error(f"Error al conectar al servidor de chroma. Compruebe que este arrancado. ")
+
+    #region CRUD COLLECTIONS
 
     def create_collection(self, collection_name):
         """
@@ -67,11 +69,64 @@ class chromadb_connection:
             if self.__heartbeat():
                 if not self.collection_exists(collection_name):
 
-                    self.client.create_collection(collection_name)
+                    self.client.create_collection(collection_name,embedding_function=self.embedding)
                     self.logger.info(f"Coleccion {collection_name} creada correctamente")
+                else:
+                    self.logger.info(f"La coleccion {collection_name} ya existe")
 
         except ValueError:
             self.logger.error(f"No se pudo crear la colección {collection_name}. ",exc_info=1)
+
+    def read_collection(self,collection_name):
+        """Recoge la collection indicada
+
+        Args:
+            collection_name (str): Nombre de la colección a recoger.
+        """
+        
+        try:
+            if self.__heartbeat():
+                if self.collection_exists(collection_name):
+
+                    collection = self.client.get_collection(collection_name,embedding_function=self.embedding)
+                    self.logger.info(f"Coleccion {collection_name} recogida correctamente")
+
+                    return collection
+                
+        except ValueError:
+            self.logger.error(f"No se pudo recoger la colección {collection_name}. ",exc_info=1)
+
+    def read_collections(self):
+        """Devuelve lista de colecciones en la base de datos
+
+        Returns:
+            Sequence[Collection]: Lista de colecciones
+        """
+        try:
+            if self.__heartbeat():
+                return self.client.list_collections()
+
+        except ValueError:
+            self.logger.error(f"No se pudieron recoger las colecciones ",exc_info=1)
+
+    def modify_collection(self,collection_name, new_name):
+        """Renombra la collection indicada
+
+        Args:
+            collection_name (str): Nombre viejo de la collection.
+            new_name (str): Nombre nuevo de la collection.
+        """
+        try:
+            if self.__heartbeat():
+                if self.collection_exists(collection_name):
+
+                    collection = self.client.get_collection(collection_name,embedding_function=self.embedding)
+
+                    collection.modify(new_name)
+                    self.logger.info(f"Coleccion {collection_name} ha sido renombrada a {new_name}")
+
+        except ValueError:
+            self.logger.error(f"No se pudo renombrar la colección {collection_name}. ",exc_info=1)
 
     def delete_collection(self, collection_name):
         """
@@ -91,26 +146,87 @@ class chromadb_connection:
         except Exception:
             self.logger.error(f"No se pudo borrar la colección {collection_name}. Probablemente no exista.",exc_info=1)
 
-    #TODO: este es el apartado de embeddings
-    def insert_documents(self,docs,collection_name):        
+    #endregion
+    
+    #region DOCUMENTS & QUERY
+
+    #region Test
+    # def insert_documents(self,collection_name,docs=None,ids=None):        
+    #     """
+    #     Inserta documentos en una colección específica en el servidor ChromaDB.
+
+    #     Args:
+    #         docs (list): Documentos a insertar.
+    #         collection_name (str): Nombre de la colección donde se insertarán los documentos.
+    #     """
+    #     documents = []
+    #     metadatas = []
+
+    #     try:
+    #         if self.__heartbeat():
+    #             if  self.collection_exists(collection_name):
+                    
+    #                 collection = self.client.get_collection(collection_name,embedding_function=self.embedding)
+                    
+    #                 for doc in docs:
+    #                     documents.append(doc.page_content)
+    #                     metadatas.append(doc.metadata)
+                        
+                        
+    #                 collection.add(
+    #                     documents=documents,
+    #                     metadatas=metadatas,
+    #                     ids=ids
+    #                 )
+
+    #                 self.logger.info(f"Documentos insertados: {len(docs)}.")
+
+    #     except ValueError:
+    #         self.logger.error(f"No se pudieron insertar documentos {collection_name}.",exc_info=1)
+    #endregion 
+
+    def create_collection_from_documents(self,collection_name,docs):
         """
-        Inserta documentos en una colección específica en el servidor ChromaDB.
+        Crea de 0 y añade documentos a una colección  en el servidor ChromaDB.
 
         Args:
-            docs (list): Documentos a insertar.
-            collection_name (str): Nombre de la colección donde se insertarán los documentos.
+            collection_name (str): Nombre de la colección donde se realizará la consulta.
+            docs (list[Document]): Lista de documentos.
+        """
+
+        try:
+            if self.__heartbeat():
+                if not self.collection_exists(collection_name):
+                    Chroma.from_documents(documents=docs,embedding=self.embedding_langchain,collection_name=collection_name,client=self.client)
+                    self.logger.info(f"Se ha creado la coleccion: {collection_name}.")
+                    self.logger.info(f"Documentos insertados: {len(docs)}.")
+
+                else:
+                    self.logger.info(f"Esta intentando crear una coleccion que ya existe {collection_name}.")
+
+        except ValueError:
+            self.logger.error(f"No se pudieron insertar documentos {collection_name}.",exc_info=1)
+        
+    def add_documents_to_collection(self,collection_name,docs):
+        """
+        Añade documentos a una colección específica en el servidor ChromaDB.
+
+        Args:
+            collection_name (str): Nombre de la colección donde se realizará la consulta.
+            docs (list[Document]): Lista de documentos.
         """
         try:
             if self.__heartbeat():
                 if  self.collection_exists(collection_name):
                     
-                    collection = self.client.get_or_create_collection(collection_name)
-                    collection.add()
+                    vectorbase = Chroma(collection_name=collection_name,client=self.client)
+                    vectorbase.add_documents(docs)
 
-        except Exception:
-            self.logger.error(f"No se pudo insertar el documento en {collection_name}.",exc_info=1)
+                    self.logger.info(f"Documentos insertados: {len(docs)} en {collection_name}.")
 
-    #TODO: este es el apartado de embeddings
+        except ValueError:
+            self.logger.error(f"No se pudieron insertar documentos en {collection_name}.",exc_info=1)    
+
     def query(self,query,collection_name,n_results):
         """
         Realiza una consulta en una colección específica en el servidor ChromaDB.
@@ -127,33 +243,49 @@ class chromadb_connection:
         try:
             if self.__heartbeat():
                 if  self.collection_exists(collection_name):
+                    
+                    vectorbase = Chroma(collection_name=collection_name,embedding_function=self.embedding_langchain,client=self.client)
+                    retriever = vectorbase.as_retriever(kwargs={'k': n_results})
+                    results = retriever.invoke(query)
+                    
+                    #region old
 
-                    collection = self.client.get_or_create_collection(collection_name)
-                    results = collection.query(
-                        query_texts=query, 
-                        n_results=n_results
-                    )
+                    # collection = self.client.get_collection(collection_name,embedding_function=self.embedding)
+                    # results = collection.query(
+                    #     query_texts=query, 
+                    #     n_results=n_results
+                    # )
 
+                    #endregion
+
+                    self.logger.info(f"Query {query} realizada con exito.")
                     return results
+                
         except ValueError:
-            self.logger.error(f"Error al ejecutar la query.",exc_info=1)
+            self.logger.error(f"Error al ejecutar la query > {query}.",exc_info=1)
 
-    def reset_chroma(self):
+    #endregion
+
+    #region RESET CHROMA
+
+    def delete_all_collections(self):
         """Metodo de reset de chromadb. Borra toda la información de la base de datos
         """
     
         if self.__heartbeat():
-            chroma_reboot = self.client.reset()
-            self.logger.warn(f"ChromaDB se esta reiniciando...")
+            collections = self.client.list_collections()
 
-            if chroma_reboot:
-                self.logger.warn(f"ChromaDB ha sido reiniciada.")
-
-            else:
-                self.logger.error(f"ChromaDB ha tenido problemas al reiniciarse.",exc_info=1)
-
+            for collection in collections:
+                self.client.delete_collection(collection.name)
+                self.logger.warn(f"Coleccion {collection.name} eliminada.")
+            
+            self.logger.warn(f"Todas las colecciones eliminadas.")
+        
+            print()
         else:
             self.logger.warn(f"No se puedo conseguir el ultimo heartbeat de ChromaDB...")
+
+    #endregion
 
     #region METODOS_PRIVADOS
 
@@ -212,7 +344,7 @@ class chromadb_connection:
                 self.logger.info(f"La coleccion {collection_name} ya existe")
                 return True
 
-        self.logger.error(f"La coleccion {collection_name} no existe")
+        self.logger.warn(f"La coleccion {collection_name} no existe")
         return False
    
    
