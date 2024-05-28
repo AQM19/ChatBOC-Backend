@@ -1,6 +1,6 @@
 import ollama
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter
 
 class Utils:
     
@@ -30,7 +30,7 @@ class Utils:
         """
 
         data = PyPDFLoader(path)
-        text_splitter=RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        text_splitter=CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         splits = text_splitter.split_documents(data.load())
 
         return splits

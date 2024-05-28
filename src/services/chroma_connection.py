@@ -24,6 +24,7 @@ class chromadb_connection:
         """
 
         self.__init_logs()
+        
         #Arrancamos logger
         self.logger = logging.getLogger(__name__)
 
@@ -150,41 +151,6 @@ class chromadb_connection:
     
     #region DOCUMENTS & QUERY
 
-    #region Test
-    # def insert_documents(self,collection_name,docs=None,ids=None):        
-    #     """
-    #     Inserta documentos en una colección específica en el servidor ChromaDB.
-
-    #     Args:
-    #         docs (list): Documentos a insertar.
-    #         collection_name (str): Nombre de la colección donde se insertarán los documentos.
-    #     """
-    #     documents = []
-    #     metadatas = []
-
-    #     try:
-    #         if self.__heartbeat():
-    #             if  self.collection_exists(collection_name):
-                    
-    #                 collection = self.client.get_collection(collection_name,embedding_function=self.embedding)
-                    
-    #                 for doc in docs:
-    #                     documents.append(doc.page_content)
-    #                     metadatas.append(doc.metadata)
-                        
-                        
-    #                 collection.add(
-    #                     documents=documents,
-    #                     metadatas=metadatas,
-    #                     ids=ids
-    #                 )
-
-    #                 self.logger.info(f"Documentos insertados: {len(docs)}.")
-
-    #     except ValueError:
-    #         self.logger.error(f"No se pudieron insertar documentos {collection_name}.",exc_info=1)
-    #endregion 
-
     def create_collection_from_documents(self,collection_name,docs):
         """
         Crea de 0 y añade documentos a una colección  en el servidor ChromaDB.
@@ -247,16 +213,6 @@ class chromadb_connection:
                     vectorbase = Chroma(collection_name=collection_name,embedding_function=self.embedding_langchain,client=self.client)
                     retriever = vectorbase.as_retriever(kwargs={'k': n_results})
                     results = retriever.invoke(query)
-                    
-                    #region old
-
-                    # collection = self.client.get_collection(collection_name,embedding_function=self.embedding)
-                    # results = collection.query(
-                    #     query_texts=query, 
-                    #     n_results=n_results
-                    # )
-
-                    #endregion
 
                     self.logger.info(f"Query {query} realizada con exito.")
                     return results
