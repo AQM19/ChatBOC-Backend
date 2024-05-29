@@ -8,7 +8,6 @@ from langchain_community.embeddings import OllamaEmbeddings
 import logging
 
 from src.services import Constants
-from src.services.CustomEmbedding import CustomEmbeddingOllama
 
 
 class chromadb_connection:
@@ -225,3 +224,34 @@ class chromadb_connection:
         return combined_docs.rstrip('\n')
     
     #endregion
+
+# from utils.Utils import Utils
+# #ejemplo de uso
+# chromavector = chromadb_connection()
+
+#CUANDO SON MUCHOS
+
+# l = []
+# h = []
+
+# for i in range(404001,404019):
+#    l.append(Utils.transformpdf(f"src/scraper/docs/pdf_docs/{i}.pdf")) 
+
+# for list in l:
+#     for item in list:
+#         h.append(item)
+
+# paginas = Utils.transformpdf ('src/scraper/docs/pdf_docs/404002.pdf')
+# Si hay que crear la coleccion
+# chromavector.create_collection_from_documents("test1",paginas)
+
+#Añadir documentos
+# chromavector.add_documents_to_collection("test1",paginas)
+
+# text = chromavector.query("aspirantes que han superado el proceso selectivo para el acceso","test1")
+
+# print(text)
+
+
+
+
