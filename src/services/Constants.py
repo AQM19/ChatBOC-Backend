@@ -1,0 +1,4 @@
+CHROMA_HOST = "localhost"
+CHROMA_PORT = 8000
+CHROMA_COLLECTION_NAME = "test"
+CHROMA_LOGS = "./logs"
