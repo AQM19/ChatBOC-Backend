@@ -7,23 +7,14 @@ from tqdm import tqdm
 import os
 # from pypdf import PdfReader
 
-from Business.WebAgents import WebAgents
-from Business.Proxies import Proxies
+
 import Business.Constants as Constants
 
 class Scraper:
 
-    def __init__(self,webagent=False,proxies=False) -> None:
+    def __init__(self) -> None:
 
-        self.webagent = webagent
-        self.proxies = proxies
         self.docsCheckpoint = []
-
-        if self.webagent:
-            self.agent = WebAgents()
-
-        if self.proxies:
-            self.proxy = Proxies()
         
         #Arrancamos logger
         self.logger = logging.getLogger(__name__)
@@ -32,7 +23,7 @@ class Scraper:
     
     def init(self):
 
-        urls=[]
+        
 
         #Comprobamos si la carpeta de descarga esta creada
         CHECK_FOLDER = os.path.isdir(Constants.DOCS_PATH)
@@ -43,17 +34,13 @@ class Scraper:
             os.makedirs(Constants.PDFS_PATH)
             self.logger.info(f"> Se ha creado la carpeta:  {Constants.PDFS_PATH} ")
 
-            for i in range(1,Constants.FIRST_DOWNLOAD):
-                urls.append(f"{Constants.BOC}{i+1}")
-
         else:
-            self.logger.info(f"> {Constants.DOCS_PATH} ya existe.")
+            self.logger.info(f"> {Constants.PDFS_PATH} ya existe.")
         
         #Leemos cuantos pdfs hay en el directorio en caso de corte o problema 
         if len(os.listdir(Constants.PDFS_PATH)) == 0:
             self.logger.warn("? - No se encontraron documentos descargados.")
             self.logger.warn("? - La descarga comenzará desde cero.")
-            self.first_Download(urls)
 
         else:
             #Con esto recogemos el id de los pdfs que ya tenemos descargados
@@ -67,18 +54,7 @@ class Scraper:
         validUrls=[]
         patience = 0
 
-        if len(self.docsCheckpoint) < Constants.FIRST_DOWNLOAD:
-
-            self.logger.warn("? - La descarga inicial no se completó aún. Reanudando...")
-
-            for i in range(0,Constants.FIRST_DOWNLOAD):
-
-                if i not in self.docsCheckpoint:
-                    validUrls.append(f"{Constants.BOC}{i+1}")
-
-
-        else:
-            for i in tqdm(range(0,Constants.NUM_ITER_MAX)):
+        for i in tqdm(range(Constants.DOWNLOAD_FROM,Constants.NUM_ITER_MAX)):
 
                 if i not in self.docsCheckpoint:
                     testUrl=self.get_Valid_Urls(f"{Constants.BOC}{i+1}")
@@ -96,6 +72,7 @@ class Scraper:
                     else:
                         self.logger.warn(f"? Se encontró un error en {url}. Probablemente no exista.")
                         patience += 1
+                        self.logger.warn(f"? Paciencia {patience}/{Constants.PATIENCE}")
 
         
 
@@ -115,12 +92,6 @@ class Scraper:
             headers = ""
             proxy = ""
 
-            #Recogemos los proxies y los web agents para la llamada
-            if self.webagent:
-                headers={'User-Agent': self.agent.getAgent()}
-            
-            if self.proxies:
-                proxy=self.proxy.getProxie()
 
             self.logger.info(f"> Comprobando {url}")
 
@@ -133,6 +104,7 @@ class Scraper:
             error = soup.find('div', id='errorDocumento')
 
             if r.status_code == 200 and error is None:
+                self.logger.info( f"? - La url {url} es valida :). ")
                 return url,False
             
             else:
@@ -149,12 +121,6 @@ class Scraper:
         headers = ""
         proxy = ""
 
-        if self.webagent:      
-            headers={'User-Agent': self.agent.getAgent()}
-        
-        if self.proxies:
-            proxy=self.proxy.getProxie()
-
         r = requests.get(f"{url}", stream = True,headers=headers,proxies=proxy)
 
         #Recogemos el id del fichero
@@ -164,35 +130,9 @@ class Scraper:
         with open(f"{pdfPath}.pdf", 'wb') as f:           
             f.write(r.content)
         
-        #Guardamos texto del pdf en .txt
-        # self.transform_PDF_to_Text(pdfPath,id)
-
-
-
+    
         self.logger.info(f"> Documento .pdf {id} descargado.")
 
-    #region Privado
 
-    # def transform_PDF_to_Text(self,pdf,id):
 
-    #     reader = PdfReader(f"{pdf}.pdf")
-    #     text = ""
-    #     for page in reader.pages:
-    #         text += page.extract_text() + "\n"
 
-    #     #Pasamos el encoding a latin-1
-    #     text = text.encode(encoding='utf-8').decode(encoding='utf-8')
-
-    #     with open(f"{Constants.TXT_PATH}/{id}.txt", 'w',encoding='utf-8') as f:    
-    #         f.write(text)
-    
-    def first_Download(self,urls):
-
-        self.logger.info(f"> Iniciando descarga de los primeros {Constants.FIRST_DOWNLOAD} pdfs del BOC")
-
-        pool=ThreadPool(processes=Constants.NUM_PROCESSES)
-        pool.map(self.download_PDF,urls)
-        pool.close()
-        pool.join()
-
-    #endRegion
