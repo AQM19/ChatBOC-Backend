@@ -1,3 +1,5 @@
+#!/bin/bash
+
 docker compose down -v
 
 docker stop ollama

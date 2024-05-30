@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Creación del entorno virtual y su gestión. Hay que cambiar el intérprete del vscode a dicho entorno.
 echo '**************************************************************************************************'
 echo Creando entorno virtual
