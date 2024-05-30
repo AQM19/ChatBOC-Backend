@@ -1,8 +1,11 @@
-import logging
 from datetime import datetime
-import os
 from dotenv import load_dotenv
-from Business.Scraper import Scraper
+import logging
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from src.models.Scrapper import Scrapper
 
 
 def main():
@@ -25,7 +28,7 @@ def main():
     logging.basicConfig(filename=f"{logs_path}/scraper-{format_date}.log", level=logging.INFO, format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
 
-    s: Scraper = Scraper()
+    s: Scrapper = Scrapper()
     s.scrape_All_PDFs()
 
 

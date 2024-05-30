@@ -9,7 +9,7 @@ import os
 import requests
 
 
-class Scraper:
+class Scrapper:
 
     def __init__(self) -> None:
         load_dotenv()
