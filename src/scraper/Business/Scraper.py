@@ -1,11 +1,10 @@
 from bs4 import BeautifulSoup
-from multiprocessing.pool import ThreadPool
 from dotenv import load_dotenv
+from multiprocessing.pool import ThreadPool
 from tqdm import tqdm
 import logging
 import os
 import requests
-# from pypdf import PdfReader
 
 class Scraper:
 
