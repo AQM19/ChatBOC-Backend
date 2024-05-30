@@ -22,7 +22,7 @@ if [ "$OS" = "Linux" ]; then
     source .venv/bin/activate
 elif [ "$OS" = "Windows" ]; then
     python -m venv .venv
-    .venv\Scripts\activate
+    source .venv/Scripts/activate
 else
     echo "Sistema operativo no soportado."
     exit 1
@@ -45,7 +45,7 @@ docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
 if [ "$OS" = "Linux" ]; then
     gnome-terminal -- sudo docker compose up
 elif [ "$OS" = "Windows" ]; then
-    start cmd /c "docker compose up"
+    docker compose up -d
 else
     echo "Sistema operativo no soportado."
     exit 1

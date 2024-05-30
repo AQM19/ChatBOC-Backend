@@ -15,6 +15,7 @@ echo Eliminando archivos y directorios
 echo '**************************************************************************************************'
 
 rm -rf ./postgres/
+rm -rf ./chromadb/
 rm -rf ./.venv
 rm -rf ./.env
 
