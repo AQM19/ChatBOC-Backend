@@ -1,26 +1,15 @@
-import ollama
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
-
+from src.config.preprompts import PRE_PROMPT_V2
+import ollama
 
 class Utils:
 
     @staticmethod
-    def ask_to_the_llama(message):
+    def ask_to_the_llama(question, context=None):
 
-        pre_prompt = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>Eres una asistente para respuesta de preguntas.
-            Usa el contexto proporcionado para contestar a la pregunta. Si no conoces la respuesta, di que no conoces la respuesta.
-            Responde siempre en español y con 4 frases como mucho. <|eot_id|><|start_header_id|>user<|end_header_id|>
-            Question: {question}
-            Context: {context}
-            Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
-
-        response = ollama.chat(model='llama3', messages=[
-            {
-                'role': 'user',
-                'content': message,
-            },
-        ])
+        response = ollama.chat(model="llama3", messages=[{'role': 'user', 'content': PRE_PROMPT_V2(question, context)}],
+                                options={'temperature': 0})
 
         return response
 
