@@ -2,6 +2,8 @@ docs
 postgres
 chroma
 chromadb
+src/scraper/docs
+src/scraper/logs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
