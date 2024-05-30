@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, session
 from flask_jwt_extended import jwt_required
 from src.config.queries import INSERT_QUESTION, INSERT_RESPONSE
-from services.postgres_connection_db import PostgresConnectionBD
+from src.services.postgres_connection_db import PostgresConnectionBD
 from src.services.model_service import ModelService
 
 ollamaBp = Blueprint('ollama', __name__)

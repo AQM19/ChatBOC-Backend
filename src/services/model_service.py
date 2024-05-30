@@ -1,4 +1,4 @@
-from services.postgres_connection_db import PostgresConnectionBD
+from src.services.postgres_connection_db import PostgresConnectionBD
 from utils.Utils import Utils
 from flask import session
 
@@ -9,7 +9,7 @@ class ModelService:
     
     def manage_response(self, question) -> str:
 
-        response = Utils.ask_to_the_llama(message=question)
+        response = Utils.ask_to_the_llama(question)
         
         # Mandar esto a una base de datos
         model: str = response['model']
