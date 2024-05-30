@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, session
 from flask_jwt_extended import jwt_required
 from src.config.queries import GET_CHAT_MESSAGES
-from src.services.connection_db import ConnectionBD
+from services.postgres_connection_db import PostgresConnectionBD
 
 chatMessagesBp = Blueprint('chat_messages', __name__)
 
@@ -19,7 +19,7 @@ def get_chat_messages(id):
     
     try:
 
-        connection = ConnectionBD()
+        connection = PostgresConnectionBD()
         connection.connect()
         
         if connection.is_connected():

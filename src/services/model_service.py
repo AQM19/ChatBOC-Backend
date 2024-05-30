@@ -1,11 +1,11 @@
-from src.services.connection_db import ConnectionBD
+from services.postgres_connection_db import PostgresConnectionBD
 from utils.Utils import Utils
 from flask import session
 
 class ModelService:
     
     def __init__(self):
-        self.connection = ConnectionBD()
+        self.connection = PostgresConnectionBD()
     
     def manage_response(self, question) -> str:
 

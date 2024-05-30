@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import psycopg2
 from psycopg2 import OperationalError, sql
 
-class ConnectionBD:
+class PostgresConnectionBD:
     
     def __init__(self):
         load_dotenv()

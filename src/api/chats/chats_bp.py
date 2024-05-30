@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, session, request
 from flask_jwt_extended import jwt_required
 from src.config.queries import *
-from src.services.connection_db import ConnectionBD
+from services.postgres_connection_db import PostgresConnectionBD
 
 chatsBp = Blueprint('chats', __name__)
 
@@ -14,7 +14,7 @@ def user_chats():
         return jsonify({'Error':'No hay ningún usuario logeado'}), 404
     
     try:
-        connection = ConnectionBD()
+        connection = PostgresConnectionBD()
         connection.connect()
         
         if connection.is_connected():
@@ -48,7 +48,7 @@ def insert_new_chat():
         return jsonify({'Error':'No hay ningún usuario logeado'}), 404
     
     try:
-        connection = ConnectionBD()
+        connection = PostgresConnectionBD()
         connection.connect()
 
         if connection.is_connected():
@@ -78,7 +78,7 @@ def delete_chat_by_id(id):
     
     try:
 
-        connection = ConnectionBD()
+        connection = PostgresConnectionBD()
         connection.connect()
 
         if connection.is_connected():

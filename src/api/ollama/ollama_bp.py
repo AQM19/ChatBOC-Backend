@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, session
 from flask_jwt_extended import jwt_required
 from src.config.queries import INSERT_QUESTION, INSERT_RESPONSE
-from src.services.connection_db import ConnectionBD
+from services.postgres_connection_db import PostgresConnectionBD
 from src.services.model_service import ModelService
 
 ollamaBp = Blueprint('ollama', __name__)
@@ -22,7 +22,7 @@ def ask() -> str:
         if not chat_id:
             return jsonify({'Error': 'No hay ninún chat seleccionado'}), 404
 
-        connection = ConnectionBD()
+        connection = PostgresConnectionBD()
         connection.connect()
 
         if connection.is_connected():
