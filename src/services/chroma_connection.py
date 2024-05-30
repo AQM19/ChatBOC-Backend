@@ -3,8 +3,11 @@ import os
 import chromadb
 from chromadb.config import Settings
 from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import OllamaEmbeddings
 
 import logging
+
+from src.services import Constants
 
 
 class chromadb_connection:
@@ -20,11 +23,12 @@ class chromadb_connection:
         """
 
         self.__init_logs()
+        
         #Arrancamos logger
         self.logger = logging.getLogger(__name__)
 
-        self.host = os.getenv("CHROMA_HOST")
-        self.port = os.getenv("CHROMA_PORT")
+        self.host = Constants.CHROMA_HOST
+        self.port = Constants.CHROMA_PORT
 
         self.settings = Settings(
             anonymized_telemetry = False,
@@ -32,21 +36,17 @@ class chromadb_connection:
         )
 
         self.client = None
+        self.chroma = None
+
+        self.embedding_langchain = OllamaEmbeddings(model="llama3")   
 
         self.chroma_connection()
 
-        #self.current_collection = None
-        self.retriever = None
-        self.embedding = None
-        #self.splitter = RecursiveCharacterTextSplitter(chunk_size=2048, chunk_overlap=128)
-    
- 
+        
     def chroma_connection(self):
         """
         Establece la conexión con el servidor ChromaDB utilizando la configuración proporcionada.
         """
-
-
         try:
             self.client = chromadb.HttpClient(host=self.host,port=self.port,settings=self.settings)
             self.logger.info(f"El servidor chroma está operativo. ")
@@ -54,71 +54,58 @@ class chromadb_connection:
         except ValueError:
             self.logger.error(f"Error al conectar al servidor de chroma. Compruebe que este arrancado. ")
 
-    def create_collection(self, collection_name):
+    
+    #region DOCUMENTS & QUERY
+
+    def create_collection_from_documents(self,collection_name,docs):
         """
-        Crea una nueva colección en el servidor ChromaDB.
+        Crea de 0 y añade documentos a una colección  en el servidor ChromaDB.
 
         Args:
-            collection_name (str): Nombre de la colección a crear.
+            collection_name (str): Nombre de la colección donde se realizará la consulta.
+            docs (list[Document]): Lista de documentos.
         """
-
 
         try:
             if self.__heartbeat():
                 if not self.collection_exists(collection_name):
+                    Chroma.from_documents(documents=docs,collection_name=collection_name,embedding=self.embedding_langchain,client=self.client)
+                    self.logger.info(f"Se ha creado la coleccion: {collection_name}.")
+                    self.logger.info(f"Documentos insertados: {len(docs)}.")
 
-                    self.client.create_collection(collection_name)
-                    self.logger.info(f"Coleccion {collection_name} creada correctamente")
+                else:
+                    self.logger.info(f"Esta intentando crear una coleccion que ya existe {collection_name}.")
 
         except ValueError:
-            self.logger.error(f"No se pudo crear la colección {collection_name}. ",exc_info=1)
-
-    def delete_collection(self, collection_name):
-        """
-        Elimina una colección existente en el servidor ChromaDB.
-
-        Args:
-            collection_name (str): Nombre de la colección a eliminar.
-        """
+            self.logger.error(f"No se pudieron insertar documentos {collection_name}.",exc_info=1)
         
-        try:
-            if self.__heartbeat():
-                if  self.collection_exists(collection_name):
-                    
-                    self.client.delete_collection(collection_name)
-                    self.logger.info(f"Coleccion {collection_name} borrada correctamente")
-
-        except Exception:
-            self.logger.error(f"No se pudo borrar la colección {collection_name}. Probablemente no exista.",exc_info=1)
-
-    #TODO: este es el apartado de embeddings
-    def insert_documents(self,docs,collection_name):        
+    def add_documents_to_collection(self,collection_name,docs):
         """
-        Inserta documentos en una colección específica en el servidor ChromaDB.
+        Añade documentos a una colección específica en el servidor ChromaDB.
 
         Args:
-            docs (list): Documentos a insertar.
-            collection_name (str): Nombre de la colección donde se insertarán los documentos.
+            collection_name (str): Nombre de la colección donde se realizará la consulta.
+            docs (list[Document]): Lista de documentos.
         """
         try:
             if self.__heartbeat():
                 if  self.collection_exists(collection_name):
                     
-                    collection = self.client.get_or_create_collection(collection_name)
-                    collection.add()
+                    vectorbase = Chroma(collection_name=collection_name,embedding_function=self.embedding_langchain,client=self.client)
+                    vectorbase.add_documents(docs)
 
-        except Exception:
-            self.logger.error(f"No se pudo insertar el documento en {collection_name}.",exc_info=1)
+                    self.logger.info(f"Documentos insertados: {len(docs)} en {collection_name}.")
 
-    #TODO: este es el apartado de embeddings
-    def query(self,query,collection_name,n_results):
+        except ValueError:
+            self.logger.error(f"No se pudieron insertar documentos en {collection_name}.",exc_info=1)    
+
+    def query(self,query,collection_name):
         """
         Realiza una consulta en una colección específica en el servidor ChromaDB.
 
         Args:
             query (str): Texto de la consulta.
             collection_name (str): Nombre de la colección donde se realizará la consulta.
-            n_results (int): Número de resultados a devolver.
 
         Returns:
             list: Resultados de la consulta.
@@ -127,33 +114,39 @@ class chromadb_connection:
         try:
             if self.__heartbeat():
                 if  self.collection_exists(collection_name):
+                    
+                    vectorbase = Chroma(collection_name=collection_name,embedding_function=self.embedding_langchain,client=self.client)
+                    retriever = vectorbase.as_retriever()
+                    results = retriever.invoke(query)
 
-                    collection = self.client.get_or_create_collection(collection_name)
-                    results = collection.query(
-                        query_texts=query, 
-                        n_results=n_results
-                    )
-
-                    return results
+                    self.logger.info(f"Query {query} realizada con exito.")
+                    return self._combine_docs(results) 
+                
         except ValueError:
-            self.logger.error(f"Error al ejecutar la query.",exc_info=1)
+            self.logger.error(f"Error al ejecutar la query > {query}.",exc_info=1)
 
-    def reset_chroma(self):
+    #endregion
+
+    #region RESET CHROMA
+
+    def delete_all_collections(self):
         """Metodo de reset de chromadb. Borra toda la información de la base de datos
         """
     
         if self.__heartbeat():
-            chroma_reboot = self.client.reset()
-            self.logger.warn(f"ChromaDB se esta reiniciando...")
+            collections = self.client.list_collections()
 
-            if chroma_reboot:
-                self.logger.warn(f"ChromaDB ha sido reiniciada.")
-
-            else:
-                self.logger.error(f"ChromaDB ha tenido problemas al reiniciarse.",exc_info=1)
-
+            for collection in collections:
+                self.client.delete_collection(collection.name)
+                self.logger.warn(f"Coleccion {collection.name} eliminada.")
+            
+            self.logger.warn(f"Todas las colecciones eliminadas.")
+        
+            print()
         else:
             self.logger.warn(f"No se puedo conseguir el ultimo heartbeat de ChromaDB...")
+
+    #endregion
 
     #region METODOS_PRIVADOS
 
@@ -176,11 +169,11 @@ class chromadb_connection:
         y configurando el formato y el archivo de logs.
         """
 
-        CHECK_LOGS_FOLDER = os.path.isdir(os.getenv("CHROMA_LOGS"))
+        CHECK_LOGS_FOLDER = os.path.isdir(Constants.CHROMA_LOGS)
 
         # Si la carpeta no existe la crea
         if not CHECK_LOGS_FOLDER:
-            os.makedirs(os.getenv("CHROMA_LOGS"))
+            os.makedirs(Constants.CHROMA_LOGS)
 
         #Fecha para organizar los logs
         date = datetime.now()
@@ -188,7 +181,7 @@ class chromadb_connection:
 
 
         #Arrancamos el logger
-        logging.basicConfig(filename=f"{os.getenv('CHROMA_LOGS')}/chroma-{format_date}.log",
+        logging.basicConfig(filename=f"{Constants.CHROMA_LOGS}/chroma-{format_date}.log",
             level=logging.INFO,
             format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
@@ -212,8 +205,53 @@ class chromadb_connection:
                 self.logger.info(f"La coleccion {collection_name} ya existe")
                 return True
 
-        self.logger.error(f"La coleccion {collection_name} no existe")
+        self.logger.warn(f"La coleccion {collection_name} no existe")
         return False
    
-   
+    def _combine_docs(self, docs):
+        """
+        Combina los documentos en una sola cadena de texto.
+
+        Args:
+            docs (list): Una lista de documentos.
+
+        Returns:
+            str: La cadena de texto que contiene la combinación de los documentos.
+        """
+        combined_docs = ""
+        for doc in docs:
+            combined_docs += doc.page_content + "\n"
+        return combined_docs.rstrip('\n')
+    
     #endregion
+
+# from utils.Utils import Utils
+# #ejemplo de uso
+# chromavector = chromadb_connection()
+
+#CUANDO SON MUCHOS
+
+# l = []
+# h = []
+
+# for i in range(404001,404019):
+#    l.append(Utils.transformpdf(f"src/scraper/docs/pdf_docs/{i}.pdf")) 
+
+# for list in l:
+#     for item in list:
+#         h.append(item)
+
+# paginas = Utils.transformpdf ('src/scraper/docs/pdf_docs/404002.pdf')
+# Si hay que crear la coleccion
+# chromavector.create_collection_from_documents("test1",paginas)
+
+#Añadir documentos
+# chromavector.add_documents_to_collection("test1",paginas)
+
+# text = chromavector.query("aspirantes que han superado el proceso selectivo para el acceso","test1")
+
+# print(text)
+
+
+
+
