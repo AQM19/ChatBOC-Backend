@@ -3,6 +3,6 @@ docker compose down -v
 docker stop ollama
 docker rm ollama
 
-sudo rm -rf ./postgres/
-sudo rm -fr ./.venv
-sudo rm -fr ./.env
+rm -rf ./postgres/
+rm -fr ./.venv
+rm -fr ./.env
