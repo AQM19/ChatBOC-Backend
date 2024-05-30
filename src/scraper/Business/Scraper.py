@@ -1,54 +1,51 @@
 from bs4 import BeautifulSoup
-from Business.Proxies import Proxies
-from Business.WebAgents import WebAgents
 from multiprocessing.pool import ThreadPool
+from dotenv import load_dotenv
 from tqdm import tqdm
-import Business.Constants as Constants
 import logging
 import os
 import requests
 # from pypdf import PdfReader
 
-
-import Business.Constants as Constants
-
 class Scraper:
 
     def __init__(self) -> None:
-
+        load_dotenv()
         self.docsCheckpoint = []
+        self.boc = os.getenv('BOC')
+        self.docs_path = os.getenv('DOCS_PATH')
+        self.pdfs_path = os.getenv('PDFS_PATH')
+        self.patience = os.getenv('PATIENCE')
+        self.num_iter_max = os.getenv('NUM_ITER_MAX')
+        self.download_from = os.getenv('DOWNLOAD_FROM')
+        self.num_processes = os.getenv('NUM_PROCESSES')
         
         #Arrancamos logger
         self.logger = logging.getLogger(__name__)
-
+        
         self.init()
     
     def init(self):
-
-        
-
         #Comprobamos si la carpeta de descarga esta creada
-        CHECK_FOLDER = os.path.isdir(Constants.DOCS_PATH)
+        check_folder = os.path.isdir(self.docs_path)
 
-        
-
-        if not CHECK_FOLDER:
-            os.makedirs(Constants.PDFS_PATH)
-            self.logger.info(f"> Se ha creado la carpeta:  {Constants.PDFS_PATH} ")
+        if not check_folder:
+            os.makedirs(self.pdfs_path)
+            self.logger.info(f"> Se ha creado la carpeta:  {self.pdfs_path} ")
 
         else:
-            self.logger.info(f"> {Constants.PDFS_PATH} ya existe.")
+            self.logger.info(f"> {self.pdfs_path} ya existe.")
         
         #Leemos cuantos pdfs hay en el directorio en caso de corte o problema 
-        if len(os.listdir(Constants.PDFS_PATH)) == 0:
+        if len(os.listdir(self.pdfs_path)) == 0:
             self.logger.warn("? - No se encontraron documentos descargados.")
             self.logger.warn("? - La descarga comenzará desde cero.")
 
         else:
             #Con esto recogemos el id de los pdfs que ya tenemos descargados
             self.logger.warn("? - Se encontraron documentos ya descargados... ")
-            for path in os.listdir(Constants.PDFS_PATH):
-                if os.path.isfile(os.path.join(Constants.PDFS_PATH, path)):
+            for path in os.listdir(self.pdfs_path):
+                if os.path.isfile(os.path.join(self.pdfs_path, path)):
                     self.docsCheckpoint.append(int(path.split(".")[0]))
 
     def scrape_All_PDFs(self):
@@ -56,10 +53,10 @@ class Scraper:
         validUrls=[]
         patience = 0
 
-        for i in tqdm(range(Constants.DOWNLOAD_FROM,Constants.NUM_ITER_MAX)):
+        for i in tqdm(range(self.download_from,self.num_iter_max)):
 
                 if i not in self.docsCheckpoint:
-                    testUrl=self.get_Valid_Urls(f"{Constants.BOC}{i+1}")
+                    testUrl=self.get_Valid_Urls(f"{self.boc}{i+1}")
 
                     url = testUrl[0]
                     error = testUrl[1]
@@ -67,20 +64,20 @@ class Scraper:
                     if not error:
                         validUrls.append(url)
 
-                    elif patience == Constants.PATIENCE:
+                    elif patience == self.patience:
                         self.logger.info("? Se supero la paciencia")
                         break
 
                     else:
                         self.logger.warn(f"? Se encontró un error en {url}. Probablemente no exista.")
                         patience += 1
-                        self.logger.warn(f"? Paciencia {patience}/{Constants.PATIENCE}")
+                        self.logger.warn(f"? Paciencia {patience}/{self.patience}")
 
         
 
         self.logger.info("> Iniciando descarga del BOC...")
         
-        pool=ThreadPool(processes=Constants.NUM_PROCESSES)
+        pool=ThreadPool(processes=self.num_processes)
         pool.map(self.download_PDF,validUrls)
         pool.close()
         pool.join()
@@ -93,7 +90,6 @@ class Scraper:
             
             headers = ""
             proxy = ""
-
 
             self.logger.info(f"> Comprobando {url}")
 
@@ -119,7 +115,6 @@ class Scraper:
             return url,True
 
     def download_PDF (self,url):
-    
         headers = ""
         proxy = ""
 
@@ -127,14 +122,9 @@ class Scraper:
 
         #Recogemos el id del fichero
         id = url.split("=")[1]
-        pdfPath = f"{Constants.PDFS_PATH}/{id}"
+        pdfPath = f"{self.pdfs_path}/{id}"
 
         with open(f"{pdfPath}.pdf", 'wb') as f:           
             f.write(r.content)
         
-    
         self.logger.info(f"> Documento .pdf {id} descargado.")
-
-
-
-
