@@ -18,8 +18,10 @@ class User(db.Model):
         self.id = str(uuid.uuid4())  # Esto generará un UUID aleatorio
         self.username = username
         self.email = email
-        self.password_hash = generate_password_hash(password)
+        # self.password_hash = generate_password_hash(password)
+        self.password_hash = password
         self.role = role
-        
+    
+    @DeprecationWarning
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
