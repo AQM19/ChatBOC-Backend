@@ -67,7 +67,7 @@ class PostgresConnectionBD:
             condition=sql.SQL(condition)
         )
         
-        return self.__execute_and_fetch_one(query)
+        return self.__execute_and_fetch_all(query)
 
     def insert(self, table, columns, values):        
         query = sql.SQL("INSERT INTO {table} ({columns}) VALUES ({values})").format(
