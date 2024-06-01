@@ -5,11 +5,7 @@ from chromadb.config import Settings
 from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
-
 import logging
-
-from src.services import Constants
-
 
 class ChromaConnectionDB:
     """
@@ -22,17 +18,19 @@ class ChromaConnectionDB:
         obteniendo las configuraciones del entorno y estableciendo la conexión
         con el servidor ChromaDB.
         """
-
-        self.__init_logs()
-        load_dotenv()
         
         # Arrancamos logger
         self.logger = logging.getLogger(__name__)
 
+        self.chroma_logs = os.getenv('CHROMA_LOGS')
         self.host = os.getenv('CHROMA_HOST')
         self.port = os.getenv('CHROMA_PORT')
         self.settings = Settings(anonymized_telemetry=False, allow_reset=True)
         self.client = None
+
+
+        self.__init_logs()
+        load_dotenv()
 
         self.embedding_langchain = OllamaEmbeddings(model="llama3")
 
@@ -65,8 +63,7 @@ class ChromaConnectionDB:
         try:
             if self.__heartbeat():
                 if not self.collection_exists(collection_name):
-                    Chroma.from_documents(documents=docs, collection_name=collection_name,
-                                          embedding=self.embedding_langchain, client=self.client)
+                    Chroma.from_documents(documents=docs, collection_name=collection_name, embedding=self.embedding_langchain, client=self.client)
                     self.logger.info(
                         f"Se ha creado la coleccion: {collection_name}.")
                     self.logger.info(f"Documentos insertados: {len(docs)}.")
@@ -175,11 +172,11 @@ class ChromaConnectionDB:
         y configurando el formato y el archivo de logs.
         """
 
-        CHECK_LOGS_FOLDER = os.path.isdir(Constants.CHROMA_LOGS)
+        CHECK_LOGS_FOLDER = os.path.isdir(self.chroma_logs)
 
         # Si la carpeta no existe la crea
         if not CHECK_LOGS_FOLDER:
-            os.makedirs(Constants.CHROMA_LOGS)
+            os.makedirs(self.chroma_logs)
 
         # Fecha para organizar los logs
         date = datetime.now()
@@ -187,7 +184,7 @@ class ChromaConnectionDB:
             str(date.month).zfill(2) + str(date.day).zfill(2)
 
         # Arrancamos el logger
-        logging.basicConfig(filename=f"{Constants.CHROMA_LOGS}/chroma-{format_date}.log",
+        logging.basicConfig(filename=f"{self.chroma_logs}/chroma-{format_date}.log",
                             level=logging.INFO,
                             format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
                             datefmt='%Y-%m-%d %H:%M:%S'
