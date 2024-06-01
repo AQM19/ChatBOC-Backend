@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, session, request
 from flask_jwt_extended import jwt_required
 from src.config.queries import *
-from src.services.postgres_connection_db import PostgresConnectionBD
+from src.classes.postgres_connection_db import PostgresConnectionBD
 
 chatsBp = Blueprint('chats', __name__)
 

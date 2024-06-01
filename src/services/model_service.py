@@ -1,5 +1,5 @@
 from src.models.ModelRun import ModelRun
-from src.services.postgres_connection_db import PostgresConnectionBD
+from src.classes.postgres_connection_db import PostgresConnectionBD
 from utils.Utils import Utils
 from flask import session
 from src.api import db
