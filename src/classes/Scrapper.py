@@ -60,7 +60,7 @@ class Scrapper:
 
             if i not in self.docsCheckpoint:
                 testUrl: (tuple[Any, Literal[False]]
-                          | tuple[Any, Literal[True]]) = self.get_Valid_Urls(f"{self.boc}{i+1}")
+                          | tuple[Any, Literal[True]]) = self.get_Valid_Urls(f"{self.boc}={i+1}")
                 url: (tuple[Any, Literal[False]] |
                       tuple[Any, Literal[True]]) = testUrl[0]
                 error: (tuple[Any, Literal[False]] |
