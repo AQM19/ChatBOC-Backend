@@ -5,9 +5,14 @@ from src.models.User import User
 
 authBp = Blueprint('auth', __name__)
 
-# Ruta para iniciar sesión y generar token JWT
 @authBp.route('/login', methods=['POST'])
 def login():
+    """
+    Inicia sesión y genera un token JWT.
+
+    Returns:
+        jsonify: Token de acceso JWT.
+    """
     data = request.get_json()
     
     username = data.get('username')
@@ -28,6 +33,12 @@ def login():
 
 @authBp.route('/register', methods=['POST'])
 def register():
+    """
+    Registra un nuevo usuario.
+
+    Returns:
+        jsonify: Mensaje de éxito o error.
+    """
     data = request.get_json()
     username = data.get('username')
     email = data.get('email')

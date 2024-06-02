@@ -7,6 +7,16 @@ class Utils:
 
     @staticmethod
     def ask_to_the_llama(question, context=None):
+        """
+        Utiliza el modelo de llama3 para obtener la respuesta bajo un contexto.
+
+        Args:
+            question (str): Pregunta que se va a realizar al modelo.
+            context (str): Contexto por el que se realiza la pregunta.
+
+        Returns:
+            str: Respuesta del modelo llama3
+        """
 
         response = ollama.chat(model="llama3", messages=[{'role': 'user', 'content': PRE_PROMPT_V1(question, context)}],
                                 options={'temperature': 0})

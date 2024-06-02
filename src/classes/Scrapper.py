@@ -1,17 +1,19 @@
-from typing import Any, Literal
-from urllib import response
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from multiprocessing.pool import ThreadPool
 from tqdm import tqdm
+from typing import Any, Literal
+from urllib import response
 import logging
 import os
 import requests
 
-
 class Scrapper:
 
     def __init__(self) -> None:
+        """
+        Inicializa el Scrapper.
+        """
         load_dotenv()
         self.docsCheckpoint: list[int] = []
         self.boc: str = os.getenv('BOC')
@@ -28,6 +30,9 @@ class Scrapper:
         self.init()
 
     def init(self):
+        """
+        Inicializa el Scrapper.
+        """
         # Comprobamos si la carpeta de descarga esta creada
         check_folder: bool = os.path.isdir(self.docs_path)
 
@@ -52,17 +57,17 @@ class Scrapper:
                     self.docsCheckpoint.append(int(path.split(".")[0]))
 
     def scrape_All_PDFs(self):
-
+        """
+        Busca todos los PDFs.
+        """
         validUrls: list = []
         patience: int = 0
 
         for i in tqdm(range(self.download_from, self.num_iter_max)):
 
             if i not in self.docsCheckpoint:
-                testUrl: (tuple[Any, Literal[False]]
-                          | tuple[Any, Literal[True]]) = self.get_Valid_Urls(f"{self.boc}={i+1}")
-                url: (tuple[Any, Literal[False]] |
-                      tuple[Any, Literal[True]]) = testUrl[0]
+                testUrl: (tuple[Any, Literal[False]] | tuple[Any, Literal[True]]) = self.get_Valid_Urls(f"{self.boc}={i+1}")
+                url: (tuple[Any, Literal[False]] | tuple[Any, Literal[True]]) = testUrl[0]
                 error: (tuple[Any, Literal[False]] |
                         tuple[Any, Literal[True]]) = testUrl[1]
 
@@ -87,7 +92,15 @@ class Scrapper:
         pool.join()
 
     def get_Valid_Urls(self, url):
+        """
+        Obtiene URLs válidas.
 
+        Args:
+            url (str): URL a verificar.
+
+        Returns:
+            tuple: URL y booleano que indica si hubo un error.
+        """
         try:
             # Aquí le estamos diciendo que pruebe desde el último documento recuperado
             # hasta el número maximo de iteraciones seleccionado en constantes.
@@ -123,6 +136,12 @@ class Scrapper:
             return url, True
 
     def download_PDF(self, url):
+        """
+        Descarga un PDF.
+
+        Args:
+            url (str): URL del PDF.
+        """
         headers: str = ""
         proxy: str = ""
 

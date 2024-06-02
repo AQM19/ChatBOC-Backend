@@ -8,7 +8,15 @@ chatMessagesBp = Blueprint('chat_messages', __name__)
 @chatMessagesBp.route('/user/chat/<id>/messages', methods=['GET'])
 @jwt_required()
 def get_chat_messages(id):
+    """
+    Obtiene los mensajes de un chat.
 
+    Args:
+        id (str): ID del chat.
+
+    Returns:
+        jsonify: Mensajes del chat.
+    """
     if not id:
         return jsonify({'Error':'No hay ningún chat con ese id'}), 404
 

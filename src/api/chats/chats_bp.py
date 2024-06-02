@@ -8,6 +8,12 @@ chatsBp = Blueprint('chats', __name__)
 @chatsBp.route('/user/chats', methods=['GET'])
 @jwt_required()
 def user_chats():
+    """
+    Obtiene todos los chats del usuario.
+
+    Returns:
+        jsonify: Lista de chats del usuario.
+    """
     user_id = session.get('user_id')
     
     if not user_id:
@@ -41,6 +47,12 @@ def user_chats():
 @chatsBp.route('/user/chat', methods=['POST'])
 @jwt_required()
 def insert_new_chat():
+    """
+    Inserta un nuevo chat para el usuario.
+
+    Returns:
+        jsonify: ID del chat insertado.
+    """
     user_id = session.get('user_id')
     chat_name = request.args.get('chat_name')
     
@@ -62,7 +74,7 @@ def insert_new_chat():
             if not chat_id:
                 return jsonify({'Error': 'No se pudo obtener el id del chat'}), 500
 
-            return jsonify({'chat_id': chat_id[0]}), 201  # Asumiendo que chat_id es una tupla
+            return jsonify({'chat_id': chat_id[0]}), 201
         
         return jsonify({'Error': 'No se pudo conectar a la base de datos'}), 500
 
@@ -72,7 +84,15 @@ def insert_new_chat():
 @chatsBp.route('/user/chat/<id>', methods=['DELETE'])
 @jwt_required()
 def delete_chat_by_id(id):
-    
+    """
+    Elimina un chat por su ID.
+
+    Args:
+        id (str): ID del chat.
+
+    Returns:
+        jsonify: True si se elimina correctamente, sino, un mensaje de error.
+    """
     if not id:
         return jsonify({'Error':'No hay ningun id'})
     

@@ -12,16 +12,6 @@ def main():
     collection_name = 'BOC'
     connection = ChromaConnectionDB()
 
-    # l = []
-    # h = []
-
-    # for i in range(404001,404019):
-    #     l.append(Utils.transformpdf(f"src/admin/docs/{i}.pdf"))
-
-    # for list in l:
-    #     for item in list:
-    #         h.append(item)
-
     print('Transformando las páginas del pdf...')
     start_time_transformpdf = time.time()
     paginas = Utils.transformpdf ('src/admin/docs/404002.pdf')

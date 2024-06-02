@@ -9,7 +9,13 @@ ollamaBp = Blueprint('ollama', __name__)
 @ollamaBp.route('/', methods=['GET'])
 @jwt_required()
 def ask() -> str:
-    
+    """
+    Maneja las solicitudes de preguntas al modelo de IA.
+
+    Returns:
+        str: Respuesta del modelo de IA.
+    """
+        
     user_id = session.get('user_id')
     question = request.args.get('question')
     chat_id = request.args.get('chat_id')

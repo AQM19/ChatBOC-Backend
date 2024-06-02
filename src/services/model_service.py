@@ -12,7 +12,15 @@ class ModelService:
         self.chroma_connection = ChromaConnectionDB()
     
     def manage_response(self, question) -> str:
+        """
+        Maneja la respuesta para una pregunta utilizando un modelo de IA y guarda la ejecución del modelo en la base de datos.
 
+        Args:
+            question (str): Pregunta que se realiza al modelo de IA.
+
+        Returns:
+            str: Respuesta del modelo de IA.
+        """
         context = self.chroma_connection.query(question, 'BOC')
         response = Utils.ask_to_the_llama(question=question, context=context)
         
