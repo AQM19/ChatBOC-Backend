@@ -27,7 +27,7 @@ CREATE TABLE users (
 CREATE TABLE chats (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
-    name VARCHAR(30) UNIQUE,
+    name VARCHAR(30),
 
     CONSTRAINT fk_chat FOREIGN KEY (user_id) REFERENCES users(id)
 );
