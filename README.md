@@ -2,6 +2,20 @@
 
 Aplicación de integración de la inteligencia artificial a un chatbot con el cual se puede preguntar sobre cualquier cosa sobre el BOC (Boletín Oficial de Cantabria).
 
+# Bases de datos
+
+Las bases de datos que utilizará el proyecto serán:
+
+## PostgreSQL
+Base de datos relacional donde se tendrán en cuenta los diferentes usuarios, roles y chats que se manejarán desde la página web.
+
+## ChromaDB
+Base de datos vectorial que almacenará todos los PDF que se obtengan del BOC. Será la proveedora del contexto para las preguntas que se le hagan al modelo de la inteligencia artificial.
+
+# Entorno y despliegue
+
+Los scripts que se nombra a continuación harán distinción del sistema operativo con el que se ejecuten.
+
 ## Preparación del entorno
 
 Para poder iniciar por primera vez la aplicación de manera correcta hacen falta dos pasos:
@@ -28,7 +42,17 @@ Con tal de hacer un `hard reset` en el proyecto, se ejecutará el script alojado
 -   Eliminar el entorno virtual `.venv`
 -   Eliminar el archivo de variables de entorno `.evn`
 
-## Colaboradores
+# Uso
+
+Para poder utilizar esta aplcación debe estar completamente desplegada, es decir, haber iniciado en el servidor, local o remoto, el script de inicio anteriormente mencionado.
+
+Una vez desplegado, para poder hacer un correcto uso de la aplicación, se debe viajar a la ruta de la página web (previamente desplegada igualmente) y registrarse. Con el registro se podrá acceder al login de la aplicación, el cual retornará un token de autenticación que se extendá a lo largo del servidor con la sesión.
+
+A la API es implosible acceder sin un token de autenticación ya que dispone de la verifiación jwt, lo cual hace que si no se manda por las cabeceras de la petición el token jwt de autenticación correspondiente no se podrá hacer uso de ello.
+
+Una vez ingresado en la aplicacion, se debe crear un chat manualmente y comenzar a escribir en ello. El modelo dará una respuesta una vez haya procesado toda la información necesaria.
+
+# Colaboradores
 <ul>
     <li style=color:#22bb33>Daniel Villegas Celaya (Gestor)</li>
     <li style=color:#5bc0de>Jesús Bueno González</li>
