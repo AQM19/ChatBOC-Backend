@@ -50,7 +50,8 @@ def ask() -> str:
 
         connection.disconnect()
         
-        return response
+        # return response
+        return jsonify({'message': response})
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
