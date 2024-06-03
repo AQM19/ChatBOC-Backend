@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
-from src.config.preprompts import PRE_PROMPT_V2, PRE_PROMPT_V1
+from src.config.preprompts import *
 import ollama
 
 class Utils:
@@ -18,8 +18,17 @@ class Utils:
             str: Respuesta del modelo llama3
         """
 
-        response = ollama.chat(model="llama3", messages=[{'role': 'user', 'content': PRE_PROMPT_V1(question, context)}],
-                                options={'temperature': 0})
+        response = ollama.chat(model="llama3", messages=[
+            {
+                'role': 'system',
+                'content': PRE_PROMPT_CONTEXT_V3(context)
+            },
+            {
+                'role': 'user',
+                'content': question
+            } 
+            ],
+            options={'temperature': 0})
 
         return response
 

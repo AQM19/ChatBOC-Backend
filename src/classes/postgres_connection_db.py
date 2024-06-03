@@ -213,3 +213,16 @@ class PostgresConnectionBD:
             condition=sql.SQL(condition)
         )
         return self.__execute_and_fetch_one(query, list(updates.values()))
+    
+    def delete(self, table, condition):
+        query = sql.SQL("DELETE FROM {table} WHERE {condition}").format(
+            table=sql.Identifier(table),
+            condition=sql.SQL(condition)
+        )
+        return self.__execute_and_fetch_one(query)
+
+    def set_query(self, query):
+        return self.__execute_and_fetch_all(sql.SQL(query))
+
+    def set_query_and_no_return(self, query):
+        self.__execute_query(sql.SQL(query))

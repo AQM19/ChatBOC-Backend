@@ -8,3 +8,5 @@ PRE_PROMPT_V2 = lambda question, context=None: """<|begin_of_text|><|start_heade
             Question: {question}
             Context: {context}
             Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
+            
+PRE_PROMPT_CONTEXT_V3 = lambda context=None: """Contexto (responde solo sobre el contenido del texto entregado): {context}"""
