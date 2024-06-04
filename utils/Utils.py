@@ -21,7 +21,7 @@ class Utils:
         response = ollama.chat(model="llama3", messages=[
             {
                 'role': 'system',
-                'content': PRE_PROMPT_CONTEXT_V3(context)
+                'content': PRE_PROMPT_CONTEXT_V4(query=question, context=context)
             },
             {
                 'role': 'user',

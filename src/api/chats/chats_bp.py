@@ -54,7 +54,11 @@ def insert_new_chat():
         jsonify: ID del chat insertado.
     """
     user_id = session.get('user_id')
-    chat_name = request.args.get('chat_name')
+    chat_name = request.json.get('chat_name')
+    
+    print()
+    print(chat_name)
+    print()
     
     if not user_id or not chat_name:
         return jsonify({'Error':'No hay ningún usuario logeado'}), 404
@@ -74,7 +78,7 @@ def insert_new_chat():
             if not chat_id:
                 return jsonify({'Error': 'No se pudo obtener el id del chat'}), 500
 
-            return jsonify({'chat_id': chat_id[0]}), 201
+            return jsonify({'chat_id': chat_id[0]}), 200
         
         return jsonify({'Error': 'No se pudo conectar a la base de datos'}), 500
 
