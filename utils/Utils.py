@@ -21,19 +21,19 @@ class Utils:
         response = ollama.chat(model="llama3", messages=[
             {
                 'role': 'system',
-                'content': PRE_PROMPT_CONTEXT_V4(query=question, context=context)
+                'content': PRE_PROMPT_CONTEXT_V5(context=context)
             },
             {
                 'role': 'user',
                 'content': question
             } 
             ],
-            options={'temperature': 0})
+            options={'temperature': 0.4})
 
         return response
 
     @staticmethod
-    def transformpdf(path, chunk_size=1024, chunk_overlap=128):
+    def transformpdf(path, chunk_size=1024, chunk_overlap=256):
         """
         Transforma un archivo PDF en fragmentos de texto.
 

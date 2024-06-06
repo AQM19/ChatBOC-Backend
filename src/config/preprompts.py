@@ -13,8 +13,8 @@ PRE_PROMPT_V2 = lambda question, context=None: """<|begin_of_text|><|start_heade
 PRE_PROMPT_CONTEXT_V3 = lambda context=None: """Contexto (responde solo sobre el contenido del texto entregado): {context}"""
 
 # v.4
-PRE_PROMPT_CONTEXT_V4 = lambda query, context: """
-    Pregunta: {query}
+PRE_PROMPT_CONTEXT_V4 = lambda question, context: """
+    Pregunta: {question}
     Contexto: (Response solo utilizando la información del texto proporcionado): {context}
     
     Instrucciones:
@@ -32,3 +32,10 @@ PRE_PROMPT_CONTEXT_V5 = lambda context: """
         2. No añadas información externa o inventada.
         3. La respuesta debe estar completamente en español.
 """
+
+PRE_PROMPT_CONTEXT_V6 = lambda question, context: """<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are an assistant for question-answering tasks.
+    Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know.
+    Use three sentences maximum and keep the answer concise . Answer in spanish<|eot_id|><|start_header_id|>user<|end_header_id|>
+    Question: {question}
+    Context: {context}
+    Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>"""

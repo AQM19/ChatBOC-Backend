@@ -19,6 +19,7 @@ class Scrapper:
         self.boc: str = os.getenv('BOC')
         self.docs_path: str = os.getenv('DOCS_PATH')
         self.pdfs_path: str = os.getenv('PDFS_PATH')
+        # self.patience: int = 600
         self.patience: int = int(os.getenv('PATIENCE'))
         self.num_iter_max: int = int(os.getenv('NUM_ITER_MAX'))
         self.download_from: int = int(os.getenv('DOWNLOAD_FROM'))

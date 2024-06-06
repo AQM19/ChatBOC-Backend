@@ -14,7 +14,15 @@ def main():
 
     print('Transformando las páginas del pdf...')
     start_time_transformpdf = time.time()
-    paginas = Utils.transformpdf ('src/admin/docs/404002.pdf')
+    paginas = []
+    paginas.extend(Utils.transformpdf('src/admin/docs/404001.pdf'))
+    paginas.extend(Utils.transformpdf('src/admin/docs/404002.pdf'))
+    paginas.extend(Utils.transformpdf('src/admin/docs/404003.pdf'))
+    paginas.extend(Utils.transformpdf('src/admin/docs/404004.pdf'))
+    paginas.extend(Utils.transformpdf('src/admin/docs/404005.pdf'))
+    paginas.extend(Utils.transformpdf('src/admin/docs/404006.pdf'))
+    paginas.extend(Utils.transformpdf('src/admin/docs/404007.pdf'))
+    paginas.extend(Utils.transformpdf('src/admin/docs/404008.pdf'))
     end_time_transformpdf = time.time()
     
     transform_time = end_time_transformpdf - start_time_transformpdf
